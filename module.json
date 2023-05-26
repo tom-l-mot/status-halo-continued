@@ -1,7 +1,7 @@
 {
     "id": "status-halo",
     "title": "Status Halo",
-    "description": "A module to render status effects in a circle around POG tokens instead of in the corner",
+    "description": "A module to render status effects in a circle around tokens instead of in a column along the side",
     "compatibility": {"minimum": 10, "verified": 11},
     "authors": [{"name": "mxzf"}],
     "styles": [],

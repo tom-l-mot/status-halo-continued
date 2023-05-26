@@ -5,7 +5,7 @@ This module arranges status icons around the edge of a token, rather than puttin
 ## Installation
 
 You can install the module manually using the manifest link
-https://gitlab.com/mxzf/status-circles/-/releases/permalink/latest/downloads/module.json
+https://gitlab.com/mxzf/status-halo/-/releases/permalink/latest/downloads/module.json
 
 ## Credits
 
