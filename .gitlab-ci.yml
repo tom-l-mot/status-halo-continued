@@ -1,0 +1,53 @@
+stages:
+  - build
+  - upload
+  - release
+
+variables:
+  PACKAGE_TYPE: 'module'
+  ZIP_NAME: $CI_PROJECT_NAME-$CI_COMMIT_TAG
+  UPLOAD_PATH: $CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$CI_PROJECT_NAME
+
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+
+build:
+  stage: build
+  image: python:latest
+  script:
+    - python create_release.py $PACKAGE_TYPE $CI_COMMIT_TAG
+  artifacts:
+    paths: 
+      - $PACKAGE_TYPE.json
+      - $ZIP_NAME.zip
+
+upload_files:
+  stage: upload
+  image: curlimages/curl:latest
+  script: 
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file $PACKAGE_TYPE.json "${UPLOAD_PATH}/${CI_COMMIT_TAG}/${PACKAGE_TYPE}.json"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file $ZIP_NAME.zip "${UPLOAD_PATH}/${CI_COMMIT_TAG}/${ZIP_NAME}.zip"'
+    - echo "Uploading to the 'latest' store too"
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file $PACKAGE_TYPE.json "${UPLOAD_PATH}/latest/${PACKAGE_TYPE}.json"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file $ZIP_NAME.zip "${UPLOAD_PATH}/latest/${CI_PROJECT_NAME}.zip"'
+
+
+publish_release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "Publishing release"
+    - grep -B 999 -m2 "^## " CHANGELOG.md | head -n -1 > this_changelog
+  release:
+    tag_name: '$CI_COMMIT_TAG'
+    description: this_changelog
+    assets:
+      links:
+        - name: '$PACKAGE_TYPE.json'
+          url: "${UPLOAD_PATH}/${CI_COMMIT_TAG}/${PACKAGE_TYPE}.json"
+          filepath: '/$PACKAGE_TYPE.json'
+        - name: '$ZIP_NAME.zip'
+          url: "${UPLOAD_PATH}/${CI_COMMIT_TAG}/${ZIP_NAME}.zip"
+          filepath: '/$ZIP_NAME.zip'
