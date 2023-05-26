@@ -13,7 +13,7 @@
             "path": "lang/en.json"
         }
     ],
-    "manifest": "https://gitlab.com/mxzf/status-circles/-/releases/permalink/latest/downloads/module.json",
-    "download": "https://gitlab.com/api/v4/projects/46172656/packages/generic/status-circles/latest/status-circles.zip",
-    "url": "https://gitlab.com/mxzf/status-circles/-/releases"
+    "manifest": "https://gitlab.com/mxzf/status-halo/-/releases/permalink/latest/downloads/module.json",
+    "download": "https://gitlab.com/api/v4/projects/46363790/packages/generic/status-halo/latest/status-halo.zip",
+    "url": "https://gitlab.com/mxzf/status-halo/-/releases"
 }
