@@ -167,7 +167,7 @@ Hooks.once("init", () => {
       let icon = new PIXI.Sprite(tex);
       if (src != "icons/svg/skull.svg"){//game.settings.get("pf2e", "deathIcon")) {
         // If the circular mask hasn't been created yet
-        if (!circularMaskTexture) {
+        /* if (!circularMaskTexture) {
           // Define a new render texture that is 110x110
           circularMaskTexture = PIXI.RenderTexture.create(110, 110);
           // Define the mask sprite
@@ -177,14 +177,17 @@ Hooks.once("init", () => {
           renderedMaskSprite.filters = [blurFilter];
           // Render the result of the mask sprite to the texture
           canvas.app.renderer.render(renderedMaskSprite, circularMaskTexture);
-        }
+        } */
 
         const minDimension = Math.min(icon.width, icon.height);
         // Use the blurred pre-made texture and create a new mask sprite for the specific icon
-        const myMask = new PIXI.Sprite(circularMaskTexture);
-        myMask.anchor.set(0.5);
+        const myMask = new PIXI.Graphics().beginFill(0xffffff).drawCircle(55, 55, 55).endFill();
+        //const myMask = new PIXI.Sprite(circularMaskTexture);
+        //myMask.anchor.set(0.5,0.5);
         myMask.width = minDimension;
         myMask.height = minDimension;
+        myMask.x = -icon.width/2
+        myMask.y = -icon.height/2
 
         icon.mask = myMask;
         icon.addChild(myMask);
