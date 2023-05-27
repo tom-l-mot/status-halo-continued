@@ -2,6 +2,8 @@
 
 This module arranges status icons around the edge of a token, rather than putting them in columns along the side.  
 
+![preview image](documentation/basic_preview_image.webp)
+
 ## Installation
 
 You can install the module manually using the manifest link
