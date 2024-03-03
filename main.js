@@ -1,16 +1,21 @@
 let circularMaskTexture = null;
 
+/**
+ * Count effects for halo
+ * @param {object} token The token
+ * @returns {number}     The number of effects to include in the halo
+ */
 function countEffects(token) {
     if (!token) {
       return 0;
     }
-    let numEffects = token.document.effects?.length || 0;
-    token.actor?.temporaryEffects?.forEach((actorEffect) => {
-      if (!actorEffect.getFlag("core", "overlay")) {
-        numEffects++;
-      }
-    });
-    return numEffects;
+
+    const tokenEffectsLen = token.document.effects?.length || 0;
+    const actorEffectsLen = token?.actor?.temporaryEffects.length || 0;
+    const overlay = token?.actor?.temporaryEffects.some(effect => !!effect.getFlag("core", "overlay"));
+   
+    // Only exclude one overlay as the rest go into the halo
+    return tokenEffectsLen + actorEffectsLen - ((overlay) ? 1 : 0);
 }
 
 function sortIcons(e1, e2) {
@@ -148,7 +153,6 @@ function updateEffectScales(token) {
 };
 
 Hooks.once("init", () => {
-
   const origRefreshEffects = Token.prototype._refreshEffects;
   Token.prototype._refreshEffects = function (...args) {
     if (this) {
@@ -156,29 +160,17 @@ Hooks.once("init", () => {
       updateEffectScales(this);
     }
   };
+
   const origDrawEffect = Token.prototype._drawEffect;
-  Token.prototype._drawEffect = async function (...args) {
+  Token.prototype._drawEffect = async function (src, tint, overlay = false) {
     if (this) {
-      const src = args[0];
-      const tint = args[1];
       // debugger;
       if (!src) return;
+      
       let tex = await loadTexture(src, { fallback: "icons/svg/hazard.svg" });
       let icon = new PIXI.Sprite(tex);
-      if (src != "icons/svg/skull.svg"){//game.settings.get("pf2e", "deathIcon")) {
-        // If the circular mask hasn't been created yet
-        /* if (!circularMaskTexture) {
-          // Define a new render texture that is 110x110
-          circularMaskTexture = PIXI.RenderTexture.create(110, 110);
-          // Define the mask sprite
-          const renderedMaskSprite = new PIXI.Graphics().beginFill(0xffffff).drawCircle(55, 55, 55).endFill();
-          // Blur the mask sprite
-          const blurFilter = new PIXI.filters.BlurFilter(2);
-          renderedMaskSprite.filters = [blurFilter];
-          // Render the result of the mask sprite to the texture
-          canvas.app.renderer.render(renderedMaskSprite, circularMaskTexture);
-        } */
-
+    
+      if (!overlay) {
         const minDimension = Math.min(icon.width, icon.height);
         // Use the blurred pre-made texture and create a new mask sprite for the specific icon
         const myMask = new PIXI.Graphics().beginFill(0xffffff).drawCircle(55, 55, 55).endFill();
@@ -188,12 +180,21 @@ Hooks.once("init", () => {
         myMask.height = minDimension;
         myMask.x = -icon.width/2
         myMask.y = -icon.height/2
-
+  
         icon.mask = myMask;
         icon.addChild(myMask);
       }
+      
       // debugger;
       return this.effects.addChild(icon);
     }
   };
+
+  // Overriden to add overlay parameter to _drawEffect
+  const origDrawOverlay = Token.prototype._drawOverlay;
+  Token.prototype._drawOverlay = async function (src, tint) {
+    const icon = await this._drawEffect(src, tint, true);
+    if ( icon ) icon.alpha = 0.8;
+    return icon;
+  }
 });
