@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 - Small bugfixes
+
+Tweaks to the way overlay tokens are handled in order to resolve some issues with the rendering of overlay statuses.  
+
 ## 0.1.1 - V11 support
 
 Fixed issue caused by PIXI library update in V11 that caused icons to fail to render
