@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0-dev.1 - Foundry 14 development build
+
+Community continuation of mxzf's Status Halo, maintained at [tom-l-mot/status-halo-continued](https://github.com/tom-l-mot/status-halo-continued).
+
+- Use Foundry's token refresh hook instead of replacing effect drawing methods.
+- Preserve core overlay handling, effect tints, and icon visibility selection.
+- Arrange rendered icons without counting actor or token effect documents.
+- Center the halo on rectangular tokens and release masks when icons are destroyed.
+- Add regression checks and local ZIP packaging.
+
+Live verification against Foundry 14.369 with Pathfinder 2e 8.5.1 is pending. This is not a stable release.
+
 ## 0.1.2 - Small bugfixes
 
 Tweaks to the way overlay tokens are handled in order to resolve some issues with the rendering of overlay statuses.  
