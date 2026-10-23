@@ -7,7 +7,8 @@ import vm from "node:vm";
 const source = await readFile(process.env.STATUS_HALO_SOURCE ?? new URL("../main.js", import.meta.url), "utf8");
 
 function setup({ width = 1, height = 1, pixelWidth = width * 100, pixelHeight = height * 100,
-    meshScaleX = 1, meshScaleY = meshScaleX, uiScale = 1, temporaryEffects = [], actorless = false } = {}) {
+    meshWidth = pixelWidth, meshHeight = pixelHeight, meshScaleX = 1, meshScaleY = meshScaleX,
+    ring, uiScale = 1, temporaryEffects = [], actorless = false } = {}) {
     const hooks = new EventEmitter();
     const graphics = [];
     class Container extends EventEmitter {
@@ -47,10 +48,12 @@ function setup({ width = 1, height = 1, pixelWidth = width * 100, pixelHeight = 
     }
     class Token {
         effects = new Container();
+        hasDynamicRing = !!ring;
+        ring = ring;
         mesh = {
             scale: { x: meshScaleX, y: meshScaleY },
-            get width() { return pixelWidth * Math.abs(this.scale.x); },
-            get height() { return pixelHeight * Math.abs(this.scale.y); }
+            get width() { return meshWidth * Math.abs(this.scale.x); },
+            get height() { return meshHeight * Math.abs(this.scale.y); }
         };
         scene = { grid: { size: 100 } };
         actor = actorless ? null : { temporaryEffects, appliedEffects: [] };
@@ -203,6 +206,41 @@ for (const { name, size, scale } of [
         });
     }
 }
+
+for (const { name, size, meshWidth, subjectScaleAdjustment, visibleDiameter } of [
+    { name: "Large", size: 2, meshWidth: 1036.7171522001859, subjectScaleAdjustment: 1.2958964402502324, visibleDiameter: 400 },
+    { name: "Huge", size: 3, meshWidth: 1555.075728300279, subjectScaleAdjustment: 1.2958964402502324, visibleDiameter: 600 },
+    { name: "Gargantuan", size: 4, meshWidth: 2110.354109505747, subjectScaleAdjustment: 1.3189713184410918, visibleDiameter: 800 }
+]) {
+    test(`dynamic ring ${name} halo touches its visible ${visibleDiameter}px ring`, async () => {
+        const { token } = setup({
+            width: size, height: size, pixelWidth: visibleDiameter, pixelHeight: visibleDiameter,
+            meshWidth, meshHeight: meshWidth,
+            ring: { scaleCorrection: 2, scaleAdjustmentX: 1, scaleAdjustmentY: 1, subjectScaleAdjustment }
+        });
+        const icons = await Promise.all(Array.from({ length: 5 }, () => token._drawEffect(texture())));
+        token.refresh();
+        const backgroundRadius = token.effects.bg.shapes.find(shape => shape[0] === "circle")[3];
+        for (const icon of icons) {
+            const innerEdge = Math.hypot(icon.position.x - visibleDiameter / 2,
+                icon.position.y - visibleDiameter / 2) - backgroundRadius;
+            assert.ok(Math.abs(innerEdge - visibleDiameter / 2) < 1e-9,
+                `expected background inner edge at ${visibleDiameter / 2}px, got ${innerEdge}px`);
+        }
+    });
+}
+
+test("dynamic ring with aspect padding uses each axis adjustment", async () => {
+    const { token } = setup({
+        width: 3, height: 2, pixelWidth: 300, pixelHeight: 200, meshWidth: 600, meshHeight: 200,
+        ring: { scaleCorrection: 2, scaleAdjustmentX: 1, scaleAdjustmentY: 0.5, subjectScaleAdjustment: 1 }
+    });
+    const icon = await token._drawEffect(texture());
+    token.refresh();
+    const angle = (0.5 + Math.PI / 30) * Math.PI;
+    assert.ok(Math.abs(icon.position.x - (150 + 159.4 * Math.cos(angle))) < 1e-9);
+    assert.ok(Math.abs(icon.position.y - (100 - 109.4 * Math.sin(angle))) < 1e-9);
+});
 
 test("texture scale-only refresh moves the halo to the rendered token edge", async () => {
     const { token } = setup();

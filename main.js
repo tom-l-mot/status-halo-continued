@@ -26,8 +26,11 @@ function updateEffectScales(token) {
     const iconSize = 12 * sizeToIconScale(size) * uiScale;
     const initialRotation = (0.5 + Math.PI / max) * Math.PI;
     const diameter = iconSize + 2 * uiScale;
-    const radiusX = token.mesh.width / 2 + diameter / 2;
-    const radiusY = token.mesh.height / 2 + diameter / 2;
+    const ring = token.hasDynamicRing ? token.ring : null;
+    const radiusX = token.mesh.width / (ring
+        ? ring.scaleCorrection * ring.scaleAdjustmentX * ring.subjectScaleAdjustment : 1) / 2 + diameter / 2;
+    const radiusY = token.mesh.height / (ring
+        ? ring.scaleCorrection * ring.scaleAdjustmentY * ring.subjectScaleAdjustment : 1) / 2 + diameter / 2;
     const radius = Math.min(radiusX, radiusY);
     const angleStep = Math.min(2 * Math.asin(Math.min(1, diameter / (2 * radius))),
         2 * Math.PI / icons.length);
