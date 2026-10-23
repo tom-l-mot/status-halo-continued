@@ -171,7 +171,7 @@ test("rectangular footprint uses document pixel dimensions, center, and UI scale
 
 for (const size of [0.5, 1, 3]) {
     for (const uiScale of [1, 1.5]) {
-        test(`circular ${size}-square token keeps a ${3 * uiScale}px background gap`, async () => {
+        test(`circular ${size}-square token has touching backgrounds at UI scale ${uiScale}`, async () => {
             const { token } = setup({ width: size, height: size, uiScale });
             const icons = await Promise.all(Array.from({ length: 5 }, () => token._drawEffect(texture())));
             token.refresh();
@@ -180,8 +180,8 @@ for (const size of [0.5, 1, 3]) {
             for (let i = 1; i < icons.length; i++) {
                 const distance = Math.hypot(icons[i].position.x - icons[i - 1].position.x,
                     icons[i].position.y - icons[i - 1].position.y);
-                assert.ok(Math.abs(distance - diameter - 3 * uiScale) < 1e-9,
-                    `expected ${3 * uiScale}px background gap, got ${distance - diameter}px`);
+                assert.ok(Math.abs(distance - diameter) < 1e-9,
+                    `expected touching backgrounds, got ${distance - diameter}px gap`);
             }
         });
     }
