@@ -1,37 +1,36 @@
-import json, os, argparse, zipfile
-
-# The name of the GitLab user/group that the repo is owned by, for the download URL
-gitlab_group = 'mxzf'
-
-# The individual files to include in the repo
-include_files = ['module.json','LICENSE','main.js'] 
-
-# The folders 
-include_folders = ['lang']
-
-# -----------------------------------------------------------------------------
-parser = argparse.ArgumentParser()
-parser.add_argument('package_type', help="The package type, generally 'system' or 'module'")
-parser.add_argument('release_tag', help="The version to specify in the manifest, generally the GitLab tag for the release")
-args = parser.parse_args()
-
-# Open the existing manifest file and determine the eventual zip name with it
-manifest = json.load(open(f'{args.package_type}.json','r'))
-zip_filename = f"{manifest['id']}-{args.release_tag}.zip"
-
-# Write the version and download link to the manifest
-manifest['version'] = str(args.release_tag)
-#manifest['manifest'] = f"https://gitlab.com/{gitlab_group}/{manifest['id']}/-/releases/permalink/latest/downloads/{args.package_type}.json"
-manifest['download'] = f"https://gitlab.com/{gitlab_group}/{manifest['id']}/-/releases/{args.release_tag}/downloads/{zip_filename}"
-json.dump(manifest, open(f'{args.package_type}.json', 'w'), indent=2)
+import argparse
+import json
+from pathlib import Path
+from zipfile import ZIP_DEFLATED, ZipFile
 
 
-# Add all of the specified files to the final zip that's being output
-with zipfile.ZipFile(zip_filename, 'w') as zip_file:
-    for filename in include_files:
-        zip_file.write(filename)
+def build_release(release_tag=None):
+    root = Path(__file__).resolve().parent
+    manifest = json.loads((root / "module.json").read_text(encoding="utf-8"))
+    version = manifest["version"]
+    if release_tag is not None and release_tag.removeprefix("v") != version:
+        raise ValueError(f"Release tag must match module.json version {version}")
 
-    for folder_name in include_folders:
-        for path,subfolders,files in os.walk(folder_name):
-            for filename in files:
-                zip_file.write(os.path.join(path,filename))
+    archive_name = f"{manifest['id']}-{version}.zip"
+    manifest["download"] = f"{manifest['url']}/releases/download/v{version}/{archive_name}"
+    output = root / "dist"
+    output.mkdir(exist_ok=True)
+    manifest_text = json.dumps(manifest, indent=2) + "\n"
+    (output / "module.json").write_text(manifest_text, encoding="utf-8", newline="\n")
+
+    files = [root / name for name in ("LICENSE", "README.md", "main.js")]
+    files.extend(path for folder in ("lang", "documentation") for path in (root / folder).rglob("*") if path.is_file())
+    archive_path = output / archive_name
+    with ZipFile(archive_path, "w", compression=ZIP_DEFLATED) as archive:
+        archive.writestr("module.json", manifest_text)
+        for path in files:
+            archive.write(path, path.relative_to(root).as_posix())
+    return archive_path
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Build a local Foundry module archive without publishing it.")
+    parser.add_argument("package_type", choices=["module"])
+    parser.add_argument("release_tag", nargs="?")
+    args = parser.parse_args()
+    print(build_release(args.release_tag))
