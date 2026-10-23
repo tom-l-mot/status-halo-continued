@@ -1,9 +1,3 @@
-function sizeToIconScale(size) {
-    if (size >= 2.5) return size / 2;
-    if (size >= 1.5) return size * 0.7;
-    return 1.4;
-}
-
 function drawBG(effectIcon, background, uiScale) {
     const radius = effectIcon.width / 2 + uiScale;
     background.lineStyle(uiScale / 2, 0x956d58, 1, 0);
@@ -23,14 +17,17 @@ function updateEffectScales(token) {
     const max = Math.max(Math.min(Math.ceil(size * 15), 40), icons.length);
     const center = token.document.getCenterPoint({ x: 0, y: 0 });
     const uiScale = canvas.dimensions.uiScale;
-    const iconSize = 12 * sizeToIconScale(size) * uiScale;
+    const ring = token.hasDynamicRing ? token.ring : null;
+    const visibleWidth = token.mesh.width / (ring
+        ? ring.scaleCorrection * ring.scaleAdjustmentX * ring.subjectScaleAdjustment : 1);
+    const visibleHeight = token.mesh.height / (ring
+        ? ring.scaleCorrection * ring.scaleAdjustmentY * ring.subjectScaleAdjustment : 1);
+    const visibleSize = Math.min(visibleWidth, visibleHeight) / token.scene.grid.size;
+    const iconSize = 16.8 * Math.max(0.8, Math.min(2, Math.sqrt(visibleSize))) * uiScale;
     const initialRotation = (0.5 + Math.PI / max) * Math.PI;
     const diameter = iconSize + 2 * uiScale;
-    const ring = token.hasDynamicRing ? token.ring : null;
-    const radiusX = token.mesh.width / (ring
-        ? ring.scaleCorrection * ring.scaleAdjustmentX * ring.subjectScaleAdjustment : 1) / 2 + diameter / 2;
-    const radiusY = token.mesh.height / (ring
-        ? ring.scaleCorrection * ring.scaleAdjustmentY * ring.subjectScaleAdjustment : 1) / 2 + diameter / 2;
+    const radiusX = visibleWidth / 2 + diameter / 2;
+    const radiusY = visibleHeight / 2 + diameter / 2;
     const radius = Math.min(radiusX, radiusY);
     const angleStep = Math.min(2 * Math.asin(Math.min(1, diameter / (2 * radius))),
         2 * Math.PI / icons.length);

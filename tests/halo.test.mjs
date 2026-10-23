@@ -8,7 +8,7 @@ const source = await readFile(process.env.STATUS_HALO_SOURCE ?? new URL("../main
 
 function setup({ width = 1, height = 1, pixelWidth = width * 100, pixelHeight = height * 100,
     meshWidth = pixelWidth, meshHeight = pixelHeight, meshScaleX = 1, meshScaleY = meshScaleX,
-    ring, uiScale = 1, temporaryEffects = [], actorless = false } = {}) {
+    ring, uiScale = 1, gridSize = 100, temporaryEffects = [], actorless = false } = {}) {
     const hooks = new EventEmitter();
     const graphics = [];
     class Container extends EventEmitter {
@@ -55,7 +55,7 @@ function setup({ width = 1, height = 1, pixelWidth = width * 100, pixelHeight = 
             get width() { return meshWidth * Math.abs(this.scale.x); },
             get height() { return meshHeight * Math.abs(this.scale.y); }
         };
-        scene = { grid: { size: 100 } };
+        scene = { grid: { size: gridSize } };
         actor = actorless ? null : { temporaryEffects, appliedEffects: [] };
         document = {
             width, height, effects: [],
@@ -168,22 +168,22 @@ test("rectangular mesh uses rendered dimensions, document center, and UI scale",
     const icon = await token._drawEffect(trimmedTexture);
     token.refresh();
     const angle = (0.5 + Math.PI / 15) * Math.PI;
-    assert.ok(Math.abs(icon.position.x - (120 + 134.1 * Math.cos(angle))) < 1e-9);
-    assert.ok(Math.abs(icon.position.y - (45 - 59.1 * Math.sin(angle))) < 1e-9);
-    assert.ok(Math.abs(icon.width - 25.2) < 1e-9);
+    assert.ok(Math.abs(icon.position.x - (120 + 133.45340955543647 * Math.cos(angle))) < 1e-9);
+    assert.ok(Math.abs(icon.position.y - (45 - 58.45340955543647 * Math.sin(angle))) < 1e-9);
+    assert.ok(Math.abs(icon.width - 23.90681911087295) < 1e-9);
     assert.equal(icon.width, icon.height);
     assert.deepEqual(icon.mask.shapes, [["ellipse", 0, 0, 60, 30]]);
     assert.equal(icon.anchor.x, 0.5);
     assert.equal(icon.anchor.y, 0.5);
 });
 
-for (const { name, size, scale } of [
-    { name: "Tiny", size: 0.5, scale: 1 },
-    { name: "Small", size: 1, scale: 0.8 },
-    { name: "Medium", size: 1, scale: 1 },
-    { name: "Large", size: 2, scale: 1 },
-    { name: "Huge", size: 3, scale: 1 },
-    { name: "Gargantuan", size: 4, scale: 1 }
+for (const { name, size, scale, iconWidth } of [
+    { name: "Tiny", size: 0.5, scale: 1, iconWidth: 13.44 },
+    { name: "Small", size: 1, scale: 0.8, iconWidth: 15.026376808798586 },
+    { name: "Medium", size: 1, scale: 1, iconWidth: 16.8 },
+    { name: "Large", size: 2, scale: 1, iconWidth: 23.758787847868 },
+    { name: "Huge", size: 3, scale: 1, iconWidth: 29.098453567157136 },
+    { name: "Gargantuan", size: 4, scale: 1, iconWidth: 33.6 }
 ]) {
     for (const uiScale of [1, 1.5]) {
         test(`circular ${name} token backgrounds touch its rendered edge and each other at UI scale ${uiScale}`, async () => {
@@ -193,6 +193,8 @@ for (const { name, size, scale } of [
             const backgrounds = token.effects.bg.shapes.filter(shape => shape[0] === "circle");
             const diameter = backgrounds[0][3] * 2;
             for (const icon of icons) {
+                assert.ok(Math.abs(icon.width - iconWidth * uiScale) < 1e-9,
+                    `expected ${iconWidth * uiScale}px icon, got ${icon.width}px`);
                 const innerEdge = Math.hypot(icon.position.x - size * 50, icon.position.y - size * 50) - diameter / 2;
                 assert.ok(Math.abs(innerEdge - size * scale * 50) < 1e-9,
                     `expected background inner edge at ${size * scale * 50}px, got ${innerEdge}px`);
@@ -205,7 +207,28 @@ for (const { name, size, scale } of [
             }
         });
     }
+    test(`dynamic ring padding preserves ${name} icon size`, async () => {
+        const visibleDiameter = size * scale * 100;
+        const { token } = setup({
+            width: size, height: size, meshWidth: visibleDiameter * 3, meshHeight: visibleDiameter * 1.5,
+            ring: { scaleCorrection: 2, scaleAdjustmentX: 1, scaleAdjustmentY: 0.5, subjectScaleAdjustment: 1.5 }
+        });
+        const icon = await token._drawEffect(texture());
+        token.refresh();
+        assert.ok(Math.abs(icon.width - iconWidth) < 1e-9,
+            `expected ${iconWidth}px icon after ring correction, got ${icon.width}px`);
+        const radius = token.effects.bg.shapes.find(shape => shape[0] === "circle")[3];
+        assert.ok(Math.abs(Math.hypot(icon.position.x - size * 50, icon.position.y - size * 50)
+            - radius - visibleDiameter / 2) < 1e-9);
+    });
 }
+
+test("icon scaling measures visible size in scene grid cells", async () => {
+    const { token } = setup({ width: 2, height: 2, gridSize: 200 });
+    const icon = await token._drawEffect(texture());
+    token.refresh();
+    assert.equal(icon.width, 16.8);
+});
 
 for (const { name, size, meshWidth, subjectScaleAdjustment, visibleDiameter } of [
     { name: "Large", size: 2, meshWidth: 1036.7171522001859, subjectScaleAdjustment: 1.2958964402502324, visibleDiameter: 400 },
@@ -238,8 +261,8 @@ test("dynamic ring with aspect padding uses each axis adjustment", async () => {
     const icon = await token._drawEffect(texture());
     token.refresh();
     const angle = (0.5 + Math.PI / 30) * Math.PI;
-    assert.ok(Math.abs(icon.position.x - (150 + 159.4 * Math.cos(angle))) < 1e-9);
-    assert.ok(Math.abs(icon.position.y - (100 - 109.4 * Math.sin(angle))) < 1e-9);
+    assert.ok(Math.abs(icon.position.x - (150 + 162.879393923934 * Math.cos(angle))) < 1e-9);
+    assert.ok(Math.abs(icon.position.y - (100 - 112.879393923934 * Math.sin(angle))) < 1e-9);
 });
 
 test("texture scale-only refresh moves the halo to the rendered token edge", async () => {
@@ -251,7 +274,14 @@ test("texture scale-only refresh moves the halo to the rendered token edge", asy
     token.refresh({ refreshMesh: true });
     const radius = token.effects.bg.shapes.find(shape => shape[0] === "circle")[3];
     assert.notDeepEqual(icon.position, before);
+    assert.ok(Math.abs(icon.width - 15.026376808798586) < 1e-9);
     assert.ok(Math.abs(Math.hypot(icon.position.x - 50, icon.position.y - 50) - radius - 40) < 1e-9);
+    token.mesh.scale.x = token.mesh.scale.y = 0.1;
+    token.refresh({ refreshMesh: true });
+    assert.ok(Math.abs(icon.width - 13.44) < 1e-9);
+    token.mesh.scale.x = token.mesh.scale.y = 9;
+    token.refresh({ refreshMesh: true });
+    assert.equal(icon.width, 33.6);
 });
 
 test("mirrored texture scales keep positive rendered halo radii", async () => {
@@ -259,14 +289,14 @@ test("mirrored texture scales keep positive rendered halo radii", async () => {
     const icon = await token._drawEffect(texture());
     token.refresh();
     const angle = (0.5 + Math.PI / 15) * Math.PI;
-    assert.ok(Math.abs(icon.position.x - (50 + 49.4 * Math.cos(angle))) < 1e-9);
-    assert.ok(Math.abs(icon.position.y - (50 - 49.4 * Math.sin(angle))) < 1e-9);
+    assert.ok(Math.abs(icon.position.x - (50 + 48.513188404399294 * Math.cos(angle))) < 1e-9);
+    assert.ok(Math.abs(icon.position.y - (50 - 48.513188404399294 * Math.sin(angle))) < 1e-9);
 });
 
 for (const options of [
     { width: 0.5, height: 0.5, count: 9 },
     { width: 1, height: 1, count: 17 },
-    { width: 3, height: 3, count: 37 },
+    { width: 3, height: 3, count: 31 },
     { width: 2, height: 1, pixelWidth: 240, pixelHeight: 90, uiScale: 1.5, count: 9 }
 ]) {
     test(`${options.width}x${options.height} halo has distinct non-overlapping backgrounds when they fit`, async () => {
