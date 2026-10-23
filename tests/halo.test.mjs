@@ -169,6 +169,57 @@ test("rectangular footprint uses document pixel dimensions, center, and UI scale
     assert.equal(icon.anchor.y, 0.5);
 });
 
+for (const size of [0.5, 1, 3]) {
+    for (const uiScale of [1, 1.5]) {
+        test(`circular ${size}-square token keeps a ${3 * uiScale}px background gap`, async () => {
+            const { token } = setup({ width: size, height: size, uiScale });
+            const icons = await Promise.all(Array.from({ length: 5 }, () => token._drawEffect(texture())));
+            token.refresh();
+            const backgrounds = token.effects.bg.shapes.filter(shape => shape[0] === "circle");
+            const diameter = backgrounds[0][3] * 2;
+            for (let i = 1; i < icons.length; i++) {
+                const distance = Math.hypot(icons[i].position.x - icons[i - 1].position.x,
+                    icons[i].position.y - icons[i - 1].position.y);
+                assert.ok(Math.abs(distance - diameter - 3 * uiScale) < 1e-9,
+                    `expected ${3 * uiScale}px background gap, got ${distance - diameter}px`);
+            }
+        });
+    }
+}
+
+for (const options of [
+    { width: 0.5, height: 0.5, count: 9 },
+    { width: 1, height: 1, count: 17 },
+    { width: 3, height: 3, count: 37 },
+    { width: 2, height: 1, pixelWidth: 240, pixelHeight: 90, uiScale: 1.5, count: 9 }
+]) {
+    test(`${options.width}x${options.height} halo has distinct non-overlapping backgrounds when they fit`, async () => {
+        const { token } = setup(options);
+        const icons = await Promise.all(Array.from({ length: options.count }, () => token._drawEffect(texture())));
+        token.refresh();
+        const diameter = token.effects.bg.shapes.find(shape => shape[0] === "circle")[3] * 2;
+        for (let i = 0; i < icons.length; i++) {
+            for (let j = i + 1; j < icons.length; j++) {
+                const distance = Math.hypot(icons[i].position.x - icons[j].position.x,
+                    icons[i].position.y - icons[j].position.y);
+                assert.ok(distance >= diameter - 1e-9, `backgrounds ${i} and ${j} overlap`);
+            }
+        }
+    });
+}
+
+test("crowded halo distributes every icon around the full circle", async () => {
+    const { token } = setup();
+    const icons = await Promise.all(Array.from({ length: 60 }, () => token._drawEffect(texture())));
+    token.refresh();
+    const distances = icons.map((icon, i) => {
+        const next = icons[(i + 1) % icons.length];
+        return Math.hypot(icon.position.x - next.position.x, icon.position.y - next.position.y);
+    });
+    assert.ok(distances[0] > 0);
+    for (const distance of distances) assert.ok(Math.abs(distance - distances[0]) < 1e-9);
+});
+
 test("repeated refresh reuses masks and ordinary destruction frees only owned masks", async () => {
     const { token, Graphics, graphics } = setup();
     const sharedTexture = texture();

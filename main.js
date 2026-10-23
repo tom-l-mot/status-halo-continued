@@ -33,11 +33,15 @@ function updateEffectScales(token) {
     const uiScale = canvas.dimensions.uiScale;
     const iconSize = 12 * sizeToIconScale(size) * uiScale;
     const initialRotation = (0.5 + Math.PI / max) * Math.PI;
+    const diameter = iconSize + 2 * uiScale;
+    const radius = Math.min(width, height) * offset / 2;
+    const angleStep = Math.min(2 * Math.asin(Math.min(1, (diameter + 3 * uiScale) / (2 * radius))),
+        2 * Math.PI / icons.length);
 
     icons.forEach((icon, i) => {
         icon.anchor.set(0.5);
         icon.width = icon.height = iconSize;
-        const angle = i / max * 2 * Math.PI + initialRotation;
+        const angle = i * angleStep + initialRotation;
         icon.position.x = center.x + width * offset / 2 * Math.cos(angle);
         icon.position.y = center.y - height * offset / 2 * Math.sin(angle);
 
