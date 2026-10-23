@@ -7,7 +7,7 @@ import vm from "node:vm";
 const source = await readFile(process.env.STATUS_HALO_SOURCE ?? new URL("../main.js", import.meta.url), "utf8");
 
 function setup({ width = 1, height = 1, pixelWidth = width * 100, pixelHeight = height * 100,
-    uiScale = 1, temporaryEffects = [], actorless = false } = {}) {
+    meshScaleX = 1, meshScaleY = meshScaleX, uiScale = 1, temporaryEffects = [], actorless = false } = {}) {
     const hooks = new EventEmitter();
     const graphics = [];
     class Container extends EventEmitter {
@@ -47,6 +47,11 @@ function setup({ width = 1, height = 1, pixelWidth = width * 100, pixelHeight = 
     }
     class Token {
         effects = new Container();
+        mesh = {
+            scale: { x: meshScaleX, y: meshScaleY },
+            get width() { return pixelWidth * Math.abs(this.scale.x); },
+            get height() { return pixelHeight * Math.abs(this.scale.y); }
+        };
         scene = { grid: { size: 100 } };
         actor = actorless ? null : { temporaryEffects, appliedEffects: [] };
         document = {
@@ -154,14 +159,14 @@ test("overlay identity is excluded wherever it appears among ordinary sprites", 
     assert.equal(token.effects.bg.shapes.filter(shape => shape[0] === "circle").length, 4);
 });
 
-test("rectangular footprint uses document pixel dimensions, center, and UI scale", async () => {
+test("rectangular mesh uses rendered dimensions, document center, and UI scale", async () => {
     const { token } = setup({ width: 2, height: 1, pixelWidth: 240, pixelHeight: 90, uiScale: 1.5 });
     const trimmedTexture = { ...texture(80, 40), orig: { width: 120, height: 60 } };
     const icon = await token._drawEffect(trimmedTexture);
     token.refresh();
     const angle = (0.5 + Math.PI / 15) * Math.PI;
-    assert.ok(Math.abs(icon.position.x - (120 + 144 * Math.cos(angle))) < 1e-9);
-    assert.ok(Math.abs(icon.position.y - (45 - 54 * Math.sin(angle))) < 1e-9);
+    assert.ok(Math.abs(icon.position.x - (120 + 134.1 * Math.cos(angle))) < 1e-9);
+    assert.ok(Math.abs(icon.position.y - (45 - 59.1 * Math.sin(angle))) < 1e-9);
     assert.ok(Math.abs(icon.width - 25.2) < 1e-9);
     assert.equal(icon.width, icon.height);
     assert.deepEqual(icon.mask.shapes, [["ellipse", 0, 0, 60, 30]]);
@@ -169,14 +174,26 @@ test("rectangular footprint uses document pixel dimensions, center, and UI scale
     assert.equal(icon.anchor.y, 0.5);
 });
 
-for (const size of [0.5, 1, 3]) {
+for (const { name, size, scale } of [
+    { name: "Tiny", size: 0.5, scale: 1 },
+    { name: "Small", size: 1, scale: 0.8 },
+    { name: "Medium", size: 1, scale: 1 },
+    { name: "Large", size: 2, scale: 1 },
+    { name: "Huge", size: 3, scale: 1 },
+    { name: "Gargantuan", size: 4, scale: 1 }
+]) {
     for (const uiScale of [1, 1.5]) {
-        test(`circular ${size}-square token has touching backgrounds at UI scale ${uiScale}`, async () => {
-            const { token } = setup({ width: size, height: size, uiScale });
+        test(`circular ${name} token backgrounds touch its rendered edge and each other at UI scale ${uiScale}`, async () => {
+            const { token } = setup({ width: size, height: size, meshScaleX: scale, uiScale });
             const icons = await Promise.all(Array.from({ length: 5 }, () => token._drawEffect(texture())));
             token.refresh();
             const backgrounds = token.effects.bg.shapes.filter(shape => shape[0] === "circle");
             const diameter = backgrounds[0][3] * 2;
+            for (const icon of icons) {
+                const innerEdge = Math.hypot(icon.position.x - size * 50, icon.position.y - size * 50) - diameter / 2;
+                assert.ok(Math.abs(innerEdge - size * scale * 50) < 1e-9,
+                    `expected background inner edge at ${size * scale * 50}px, got ${innerEdge}px`);
+            }
             for (let i = 1; i < icons.length; i++) {
                 const distance = Math.hypot(icons[i].position.x - icons[i - 1].position.x,
                     icons[i].position.y - icons[i - 1].position.y);
@@ -186,6 +203,27 @@ for (const size of [0.5, 1, 3]) {
         });
     }
 }
+
+test("texture scale-only refresh moves the halo to the rendered token edge", async () => {
+    const { token } = setup();
+    const icon = await token._drawEffect(texture());
+    token.refresh();
+    const before = { ...icon.position };
+    token.mesh.scale.x = token.mesh.scale.y = 0.8;
+    token.refresh({ refreshMesh: true });
+    const radius = token.effects.bg.shapes.find(shape => shape[0] === "circle")[3];
+    assert.notDeepEqual(icon.position, before);
+    assert.ok(Math.abs(Math.hypot(icon.position.x - 50, icon.position.y - 50) - radius - 40) < 1e-9);
+});
+
+test("mirrored texture scales keep positive rendered halo radii", async () => {
+    const { token } = setup({ meshScaleX: -0.8, meshScaleY: -0.8 });
+    const icon = await token._drawEffect(texture());
+    token.refresh();
+    const angle = (0.5 + Math.PI / 15) * Math.PI;
+    assert.ok(Math.abs(icon.position.x - (50 + 49.4 * Math.cos(angle))) < 1e-9);
+    assert.ok(Math.abs(icon.position.y - (50 - 49.4 * Math.sin(angle))) < 1e-9);
+});
 
 for (const options of [
     { width: 0.5, height: 0.5, count: 9 },
