@@ -71,3 +71,7 @@ Run the local checks and rebuild the archive. For version 0.2.0, create a non-pr
 - tom-l-mot maintains this continuation.
 
 The code remains under the [MIT license](LICENSE). Preserve the original copyright and permission notice when you redistribute it. Foundry VTT itself is proprietary and is not included in this repository.
+
+## Support development
+
+If you'd like to support continued development and maintenance, you can [buy me a coffee on Ko-fi](https://ko-fi.com/tomlmot). Thanks for your support!
