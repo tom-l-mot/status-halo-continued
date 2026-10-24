@@ -1,5 +1,9 @@
 # Status Halo Continued
 
+[![Foundry VTT 14](https://img.shields.io/badge/Foundry_VTT-14-orange)](#install-in-foundry)
+[![Tested with PF2e 8.6.1](https://img.shields.io/badge/Tested_with-PF2e_8.6.1-purple)](#test-the-foundry-14-build)
+[![Latest release](https://img.shields.io/github/v/release/tom-l-mot/status-halo-continued?label=release)](https://github.com/tom-l-mot/status-halo-continued/releases/latest)
+[![MIT license](https://img.shields.io/github/license/tom-l-mot/status-halo-continued)](LICENSE)
 [![Support on Ko-fi](https://img.shields.io/badge/Support_on_Ko--fi-FF5E5B?style=flat&logo=kofi&logoColor=white)](https://ko-fi.com/tomlmot)
 
 Arrange compact, circular status icons around the edge of a token, with gentle scaling across token sizes. Foundry continues to handle effect visibility, tints, image loading, and centered overlay icons.
