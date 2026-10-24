@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.2.0-dev.1 - Foundry 14 development build
+## 0.2.0 - 2026-10-23
+
+- Support Foundry VTT 14, verified on build 14.369 with Pathfinder 2e 8.6.1.
+- Place compact, circular status icons so their backgrounds touch the rendered token edge and adjacent backgrounds when they fit.
+- Size the halo from rendered dimensions, including Small token texture scaling and dynamic ring padding.
+- Scale icons gently across token sizes, with lower and upper bounds.
+- Verify the six reference sizes from Tiny through Gargantuan after a normal world reload, and check dynamic ring sizing live.
+- Add automated coverage for compact spacing, rendered sizing, dynamic rings, and core effect behavior.
+
+## 0.2.0-dev.1 - Historical Foundry 14 development build
 
 Community continuation of mxzf's Status Halo, maintained at [tom-l-mot/status-halo-continued](https://github.com/tom-l-mot/status-halo-continued).
 
@@ -10,7 +19,7 @@ Community continuation of mxzf's Status Halo, maintained at [tom-l-mot/status-ha
 - Center the halo on rectangular tokens and release masks when icons are destroyed.
 - Add regression checks and local ZIP packaging.
 
-Live verification against Foundry 14.369 with Pathfinder 2e 8.5.1 is pending. This is not a stable release.
+At this development stage, live verification against Foundry 14.369 with Pathfinder 2e 8.5.1 was pending. This entry records the earlier development build, not the stable release above.
 
 ## 0.1.2 - Small bugfixes
 
