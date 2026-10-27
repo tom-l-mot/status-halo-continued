@@ -2,7 +2,7 @@
     "id": "status-halo-continued",
     "title": "Status Halo Continued",
     "version": "0.2.0",
-    "description": "Arrange compact, circular status icons around token edges with gentle scaling across token sizes.",
+    "description": "A module to render status effects in a circle around tokens instead of in a column along the side",
     "compatibility": {"minimum": "14", "verified": "14.369", "maximum": "14"},
     "authors": [
         {"name": "mxzf", "url": "https://gitlab.com/mxzf/status-halo"},
