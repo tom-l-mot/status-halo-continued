@@ -8,6 +8,10 @@
 
 Arrange compact, circular status icons around the edge of a token, with gentle scaling across token sizes. Foundry continues to handle effect visibility, tints, image loading, and centered overlay icons.
 
+![Tiny, Small, Medium, Large, Huge, and Gargantuan tokens with Frightened, Sickened, Prone, and Blinded status icons arranged around their edges](documentation/token-sizes-and-statuses.jpg)
+
+*Staged size comparison rendered with Status Halo Continued 0.2.0 and PF2e status icons. The same artwork is shown at each size, including PF2e's smaller artwork scale for Small tokens.*
+
 This is a community continuation of [Status Halo by mxzf](https://gitlab.com/mxzf/status-halo), with the original Git history and MIT license preserved. The original idea and underlying code came from [PF2e Dorako UI by Dorako](https://foundryvtt.com/packages/pf2e-dorako-ui).
 
 Version 0.2.0 was tested in Foundry VTT 14.369 with Pathfinder 2e 8.6.1. Live checks covered the six reference sizes, Tiny, Small, Medium, Large, Huge, and Gargantuan, after a normal world reload. Dynamic ring sizing also passed live checks. Automated tests cover core effect behavior and halo layout.
