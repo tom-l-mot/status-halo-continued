@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - 2026-10-30
+
+- Remove Foundry minimum and maximum version limits while retaining the existing verified version.
+
 ## 0.2.0 - 2026-10-23
 
 - Support Foundry VTT 14, verified on build 14.369 with Pathfinder 2e 8.6.1.

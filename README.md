@@ -15,7 +15,7 @@ Arrange compact, circular status icons around the edge of a token, with gentle s
 
 This is a community continuation of [Status Halo by mxzf](https://gitlab.com/mxzf/status-halo), with the original Git history and MIT license preserved. The original idea and underlying code came from [PF2e Dorako UI by Dorako](https://foundryvtt.com/packages/pf2e-dorako-ui).
 
-Version 0.2.0 was tested in Foundry VTT 14.369 with Pathfinder 2e 8.6.1. Live checks covered the six reference sizes, Tiny, Small, Medium, Large, Huge, and Gargantuan, after a normal world reload. Dynamic ring sizing also passed live checks. Automated tests cover core effect behavior and halo layout.
+The manifest sets no Foundry version limits and retains Foundry 14.369 as its verified version. Version 0.2.0 was tested in Foundry VTT 14.369 with Pathfinder 2e 8.6.1. Live checks covered the six reference sizes, Tiny, Small, Medium, Large, Huge, and Gargantuan, after a normal world reload. Dynamic ring sizing also passed live checks. Automated tests cover core effect behavior and halo layout. Version 0.2.1 removes the manifest version limits. Other Foundry versions remain untested.
 
 Other game systems have not been live-tested. Custom artwork with transparent margins or off-center anchors may need further adjustment. Very crowded halos can overlap when there is insufficient space.
 
@@ -38,7 +38,7 @@ The new module ID lets you keep the original installed. Enable only one of them 
 Use a test world or a backup of your world for the first test.
 
 1. Run `python create_release.py module` from this repository. On Windows, use `py -3.12 create_release.py module` if necessary.
-2. Stop Foundry. Extract `dist/status-halo-continued-0.2.0.zip` into `<Foundry user data>/Data/modules/status-halo-continued/`.
+2. Stop Foundry. Extract `dist/status-halo-continued-0.2.1.zip` into `<Foundry user data>/Data/modules/status-halo-continued/`.
 3. Check that `module.json` is directly inside that folder.
 4. Start Foundry and open the test world. Disable the original Status Halo and other modules that rearrange status icons.
 5. Enable **Status Halo Continued** in **Manage Modules** and reload the world.
@@ -73,7 +73,7 @@ Automated checks cover effect visibility, tints, overlays, mask cleanup, token s
 
 ## Publish a tested release
 
-Run the local checks and rebuild the archive. For version 0.2.0, create a non-prerelease GitHub release tagged `v0.2.0` and attach `dist/module.json` and `dist/status-halo-continued-0.2.0.zip`. The stable manifest URL then points to that release. Listing the module in Foundry's package directory is a separate step.
+Run the local checks and rebuild the archive. For version 0.2.1, create a non-prerelease GitHub release tagged `v0.2.1` and attach `dist/module.json` and `dist/status-halo-continued-0.2.1.zip`. The stable manifest URL then points to that release. Listing the module in Foundry's package directory is a separate step.
 
 ## Credits and license
 
