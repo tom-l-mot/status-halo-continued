@@ -16,6 +16,7 @@ class ReleaseTest(unittest.TestCase):
         source = (ROOT / "module.json").read_bytes()
         archive_path = RELEASE.build_release()
         manifest = json.loads(source)
+        self.assertEqual(manifest["compatibility"], {"verified": "14.369"})
         with ZipFile(archive_path) as archive:
             manifest_bytes = archive.read("module.json")
             self.assertEqual(json.loads(manifest_bytes), manifest)
