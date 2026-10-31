@@ -1,7 +1,7 @@
 # Status Halo Continued
 
 [![Foundry VTT 14](https://img.shields.io/badge/Foundry_VTT-14-orange)](#install-in-foundry)
-[![Tested with PF2e 8.6.1](https://img.shields.io/badge/Tested_with-PF2e_8.6.1-purple)](#test-the-foundry-14-build)
+[![Tested with PF2e, D&D 5e, and SF2e](https://img.shields.io/badge/Tested_with-PF2e%20%7C%20D%26D_5e%20%7C%20SF2e-purple)](#system-compatibility)
 [![Latest release](https://img.shields.io/github/v/release/tom-l-mot/status-halo-continued?label=release)](https://github.com/tom-l-mot/status-halo-continued/releases/latest)
 [![MIT license](https://img.shields.io/github/license/tom-l-mot/status-halo-continued)](LICENSE)
 [![Support on Ko-fi](https://img.shields.io/badge/Support_on_Ko--fi-FF5E5B?style=flat&logo=kofi&logoColor=white)](https://ko-fi.com/tomlmot)
@@ -15,9 +15,19 @@ Arrange compact, circular status icons around the edge of a token, with gentle s
 
 This is a community continuation of [Status Halo by mxzf](https://gitlab.com/mxzf/status-halo), with the original Git history and MIT license preserved. The original idea and underlying code came from [PF2e Dorako UI by Dorako](https://foundryvtt.com/packages/pf2e-dorako-ui).
 
-The manifest sets no Foundry version limits and retains Foundry 14.369 as its verified version. Version 0.2.0 was tested in Foundry VTT 14.369 with Pathfinder 2e 8.6.1. Live checks covered the six reference sizes, Tiny, Small, Medium, Large, Huge, and Gargantuan, after a normal world reload. Dynamic ring sizing also passed live checks. Automated tests cover core effect behavior and halo layout. Version 0.2.1 removes the manifest version limits. Other Foundry versions remain untested.
+The renderer uses Foundry's token and effect data without checking the game system. Status Halo Continued is system agnostic. Live compatibility checks have passed in the systems listed below. The manifest sets no Foundry version limits and retains Foundry 14.369 as its verified version. Other Foundry versions remain untested.
 
-Other game systems have not been live-tested. Custom artwork with transparent margins or off-center anchors may need further adjustment. Very crowded halos can overlap when there is insufficient space.
+Custom artwork with transparent margins or off-center anchors may need adjustment. Very crowded halos can overlap when there is insufficient space.
+
+## System compatibility
+
+| Game system | Version | Foundry VTT | Status |
+| --- | --- | --- | --- |
+| Pathfinder 2e | 8.6.1 | 14.369 | Passed |
+| D&D 5e | 6.0.6 | 14.369 | Passed |
+| Starfinder 2e | 1.6.1 | 14.369 | Passed |
+
+Other systems are unverified. These checks cover native conditions, rendered placement, token sizes, overlays, reloads, and scene changes in dedicated test worlds. See the [compatibility record](documentation/compatibility.md) for exact coverage and limits. PF2e and Starfinder 2e apply Off-Guard when the tested NPC becomes Prone.
 
 ## Install in Foundry
 
@@ -38,7 +48,7 @@ The new module ID lets you keep the original installed. Enable only one of them 
 Use a test world or a backup of your world for the first test.
 
 1. Run `python create_release.py module` from this repository. On Windows, use `py -3.12 create_release.py module` if necessary.
-2. Stop Foundry. Extract `dist/status-halo-continued-0.2.1.zip` into `<Foundry user data>/Data/modules/status-halo-continued/`.
+2. Stop Foundry. Extract `dist/status-halo-continued-0.2.2.zip` into `<Foundry user data>/Data/modules/status-halo-continued/`.
 3. Check that `module.json` is directly inside that folder.
 4. Start Foundry and open the test world. Disable the original Status Halo and other modules that rearrange status icons.
 5. Enable **Status Halo Continued** in **Manage Modules** and reload the world.
@@ -47,16 +57,16 @@ A repository source ZIP also includes development files. Use the packaged ZIP ab
 
 ## Test the Foundry 14 build
 
-Record your Foundry build, game system version, and enabled modules. Open the browser console before you test and retain any errors.
+Use a dedicated test world. Record your Foundry build, game system version, and enabled modules. Open the browser console before you test and retain any errors.
 
-- Add and remove several PF2e conditions, then remove all conditions. Check that icons and their backgrounds disappear together.
-- Set an overlay with ordinary conditions present. Check that the overlay stays centered, large, and unmasked while the conditions form a halo.
+- Add and remove native conditions, then remove all conditions. Check that icons and their backgrounds disappear together.
+- Set a native overlay with ordinary conditions present. Check that the overlay stays centered, large, and unmasked while the conditions form a halo.
 - Display a permanent effect, hide an effect icon, and test an effect with a tint. Foundry's icon visibility and tint must remain intact.
 - Test Tiny, Small, Medium, Large, Huge, Gargantuan, and rectangular tokens. Check that the halo follows the rendered edge after a resize, including Small tokens and dynamic rings.
 - Reload the world, switch scenes, and add or remove effects again. Check for duplicate icons and console errors.
 - Re-enable your normal modules in small groups. Other modules that change effect layout can conflict.
 
-For a bug report, include the steps, expected result, actual result, and console error. Remove private server details from any console output before posting it publicly.
+For PF2e and Starfinder 2e, account for system-added effects such as Off-Guard when Prone is active. For a bug report, include the steps, expected result, actual result, and console error. Remove private server details from any console output before posting it publicly.
 
 ## Run local checks
 
@@ -73,7 +83,7 @@ Automated checks cover effect visibility, tints, overlays, mask cleanup, token s
 
 ## Publish a tested release
 
-Run the local checks and rebuild the archive. For version 0.2.1, create a non-prerelease GitHub release tagged `v0.2.1` and attach `dist/module.json` and `dist/status-halo-continued-0.2.1.zip`. The stable manifest URL then points to that release. Listing the module in Foundry's package directory is a separate step.
+Run the local checks and rebuild the archive. For version 0.2.2, create a non-prerelease GitHub release tagged `v0.2.2` and attach `dist/module.json` and `dist/status-halo-continued-0.2.2.zip`. The stable manifest URL then points to that release. Listing the module in Foundry's package directory is a separate step.
 
 ## Credits and license
 

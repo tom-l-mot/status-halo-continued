@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2 - 2026-10-30
+
+- Verify compatibility in Pathfinder 2e 8.6.1, D&D 5e 6.0.6, and Starfinder 2e 1.6.1 on Foundry VTT 14.369 using dedicated test worlds.
+- Clarify that the renderer does not branch by game system. No renderer code changed.
+
 ## 0.2.1 - 2026-10-30
 
 - Remove Foundry minimum and maximum version limits while retaining the existing verified version.
